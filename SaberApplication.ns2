@@ -1,0 +1,244 @@
+Newsqueak2
+'Saber'
+
+class SaberApplication withSite: theSite = (
+"
+Saber is a web application framework for Newspeak2.
+quick start:
+	(Saber usingPlatform: Platform new) startWithSiteRoot: app
+
+app is the actual web site definition and roughly speaking has a 'interface'
+that it needs to implement. It needs to respond to the following messages:
+
+#platform -- return the Platform .. this means that the site needs to be instantiated *before* a SaberApplication
+#name -- return a string for the name of the app
+#port -- port to run on
+
+besides that.. a Saber site needs to have a single class named 'SiteRoot' that derives from SaberHandler. Within the 'SiteRoot', any classes that derive from SaberHandler are treated as corresponding to 'folders' within a URL/route request (/foo/bar might be mapped as SiteRoot`Foo`Bar) .. the class names are treated as being case insensitive for the purposes of route resolution, so the same class hierarchy would match a request to /Foo/Bar, /fOO/bAr, etc).
+
+Within an individual SaberHandler, are a number of methods corresponding to HTTP
+'verbs' (get:, post:, put:, etc) .. Each of the methods take a single argument: the 
+HttpRequest for the HTTP transaction.
+"
+|
+	p = theSite platform.	
+	site = theSite.
+	
+	HttpService = p HttpService.
+	ModuleAssembly = p ModuleAssembly.
+	ModDoc = p ModDoc.
+	ModAutoIndex = p ModAutoIndex.
+	ModFile = p ModFile.
+	HttpRequest = p HttpRequest.
+	HttpResponse = p HttpResponse.
+	NS2Reflection = p NS2Reflection.
+	NS2ClassStencilMirror = p NS2ClassStencilMirror.
+	SaberHandler = p SaberHandler.
+	SaberNotFoundHandler = p SaberNotFoundHandler.
+	Error = p Error.
+	FileDirectory = p FileDirectory.
+
+	httpd = nil.
+	ma = nil.
+	OrderedCollection = p OrderedCollection.
+|
+)
+('as yet unclassified'
+addSite: theSite to: modAsm = (
+	| handlers sm hi alias md |
+	"
+	md:: ModDoc new.
+	md documentRoot: (FileDirectory default fullName, FileDirectory slash, 'static').
+	modAsm alias: '/static' to: [ modAsm addModule: md].
+	md addSubModule: ModFile new.
+	"
+	sm:: getMirrorFor: theSite class.
+	handlers:: getStaticFileHandlersFrom: (sm mixin classes mirrorNamed: 'SiteRoot').
+	
+	handlers do: [ :h | 
+		hi:: getInstanceFor: h from: theSite.
+		md:: ModDoc new.
+		md documentRoot: hi documentRoot.
+		alias:: '/',h name asString.
+		modAsm alias: (alias) to: [ modAsm addModule: md ].
+		md addSubModule: ModFile new.
+		].
+
+	modAsm addPlug: [ :request |
+	processHttpRequest: request withSite: theSite ].
+)
+
+breadcrumbsFrom: mirror = (
+	^ OrderedCollection newFrom: mirror fqName.
+)
+
+buildModuleAssembly = (
+	| modAsm |
+	modAsm:: ModuleAssembly core.
+	addSite: site to: modAsm.
+	^ modAsm.
+)
+
+defaultNotFoundHandler = (
+	^ SaberNotFoundHandler new.
+)
+
+doRouting: theSite <SaberHandler> req: request = (
+	| nodes = nil. result = nil. siteMirror = nil. srm = nil. h = nil.|
+	result:: ''.
+	nodes:: OrderedCollection newFrom: (request url subStrings: '/').
+	siteMirror:: self getMirrorFor: site class.
+	srm:: siteMirror mixin classes mirrorNamed: 'SiteRoot'.
+	h:: self process: srm nodes: nodes req: request.
+	^ h.
+)
+
+executeHandler: hInst req: request = (
+	| response |
+	(request method = 'GET') ifTrue: [ response:: (hInst onGet: request) ].
+	(request method = 'POST') ifTrue: [ response:: (hInst onPost: request) ].
+	(request method = 'PUT') ifTrue: [ response:: (hInst onPut: request) ].
+	(request method = 'DELETE') ifTrue: [ response:: (hInst onDelete: request) ].	
+	^ response
+)
+
+getHandlersFrom: mirror = (
+	^ getNestedClassesSubclassing: 'SaberHandler' fromMirror: mirror.
+)
+
+getInstanceFor: clsMirror from: inst = (
+	| breadcrumbs targetInst |
+	breadcrumbs:: breadcrumbsFrom: clsMirror.
+	breadcrumbs removeFirst. "we skip the first breadcrumb, since it's the class of inst"
+	targetInst:: inst.
+	breadcrumbs do: [ :s | 
+		targetInst:: ((targetInst class methodDictionary at: s) valueWithReceiver: targetInst arguments: {} ) new.
+		].
+	^ targetInst
+)
+
+getMirrorFor: cls = (
+	^ (NS2Reflection new) reflectOnClass: cls.
+)
+
+getNestedClassesFor: cls = (
+	| r = nil. mirror = nil. m = nil. |
+	mirror:: self getMirrorFor: cls.
+	m:: mirror mixin.
+	^m classes.
+)
+
+getNestedClassesSubclassing: clsName <String> fromMirror: m <NS2ClassStencilMirror> = (
+	| hList = nil. |
+	hList:: OrderedCollection new.
+	m mixin classes asOrderedCollection do: [ :cls |
+		((cls guessSuperclass name asString) = clsName) ifTrue: [ hList add: cls ].
+	].
+	^ hList
+)
+
+getNotFoundHandlerFrom: mirror fromInstance: inst = (
+	| retVal h |
+	h:: singleNestedClassSubclassing: 'SaberNotFoundHandler' fromMirror: mirror.
+	(h = nil)
+		ifTrue: [retVal:: defaultNotFoundHandler]
+		ifFalse: [ retVal:: getInstanceFor: h from: inst ].
+	^ retVal
+)
+
+getParamHandlerFrom: mirror = (
+	^ singleNestedClassSubclassing: 'SaberParameterHandler' fromMirror: mirror
+)
+
+getStaticFileHandlersFrom: siteRoot = (
+	^ getNestedClassesSubclassing: 'SaberStaticFileHandler' fromMirror: siteRoot
+)
+
+process: handler nodes: nodes req: request = (
+	| thisNode = nil. atDestHandler = nil. nextHandler = nil. result = nil. paramHandler = nil.|
+	atDestHandler:: false.
+
+	(nodes isEmpty) ifTrue: [ atDestHandler:: true. ]. "if nodes is empty, we're done"
+
+	atDestHandler ifFalse: [
+	thisNode:: nodes removeFirst asLowercase.
+	
+	(getHandlersFrom: handler) do:  [:h | 
+		(h name asString asLowercase = thisNode) ifTrue: [ nextHandler:: h ] 
+	]
+		
+	].
+	
+	(nextHandler = nil) ifTrue: [ 
+		atDestHandler ifFalse: [ 
+			paramHandler:: getParamHandlerFrom: handler.
+				(paramHandler = nil) 
+					ifTrue: [	"the end of the road. handler not found"
+						nextHandler:: 'not found'. 
+						atDestHandler:: true. 
+					]
+					ifFalse: [ "we'll dive into the parameter and continue from there"
+						request getFields at: paramHandler name asString put: thisNode.
+						nextHandler:: paramHandler
+					].
+			] 
+		].
+
+	result:: atDestHandler 
+		ifTrue: [ (nextHandler = 'not found') ifTrue: [nextHandler] ifFalse: [handler]. ]
+		ifFalse: [ process: nextHandler nodes: nodes req: request ].
+	^ result.
+)
+
+processHttpRequest: request <HttpRequest> withSite: theSite = (
+	| handler = nil. resp = nil.|
+	handler:: doRouting: theSite req: request.
+	resp:: responseFrom: handler req: request.
+	^resp.
+)
+
+responseFrom: handler <NS2ClassStencilMirror> req: request <HttpRequest> ^ <HttpResponse> = (
+	| response hInst |
+	
+	(handler = 'not found') 
+		ifTrue: [ hInst:: getNotFoundHandlerFrom: ((getMirrorFor: site class) mixin classes mirrorNamed: 'SiteRoot') fromInstance: site]
+		ifFalse: [ hInst:: getInstanceFor: handler from: site ].
+
+	response:: executeHandler: hInst req: request.
+	
+	(response = '404') ifTrue: [ 
+		hInst:: getNotFoundHandlerFrom: ((getMirrorFor: site class) mixin classes mirrorNamed: 'SiteRoot') fromInstance: site.
+		response:: executeHandler: hInst req: request.
+		(response = '404') ifTrue: [response:: HttpRequest status: #notFound contents: '']].
+	^ response.
+)
+
+singleNestedClassSubclassing: clsName fromMirror: mirror = (
+	| list retVal |
+	list:: getNestedClassesSubclassing: clsName fromMirror: mirror.
+	(list size = 1) 
+		ifTrue: [retVal:: list at: 1]
+		ifFalse: [
+			(list size = 0) 
+				ifTrue: [ retVal:: nil]
+				ifFalse: [ (Error new messageText: 'more than one clsName found') signal ] 
+		].
+	^ retVal
+)
+
+start = (
+	| md |
+	ma:: buildModuleAssembly.
+	
+	httpd:: HttpService startOn: (site port) named: (site name).
+	httpd module: ma rootModule.
+	^ self.
+)
+
+stop = (
+	httpd stop.
+	httpd:: nil.
+	ma:: nil.
+)
+
+)

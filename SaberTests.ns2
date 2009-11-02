@@ -1,0 +1,255 @@
+Newsqueak2
+'Saber'
+
+class SaberTests usingPlatform: platform testing: theSut testFramework: unitTesting = (
+"Describe the class in this comment."
+|
+	TestCase = unitTesting TestCase.
+	TestConfiguration = unitTesting TestConfiguration.
+	OrderedCollection = platform OrderedCollection.
+	NS2ClassStencilMirror = platform NS2ClassStencilMirror.
+	HttpResponse = platform HttpResponse.
+	HttpRequest = platform HttpRequest.
+	sut = theSut.
+|
+)
+(
+
+class RequestToHandlerResolutionTestCase selector: s <Symbol> = TestCase selector: s(
+"Describe the class in this comment."
+|
+	saber = sut.
+|
+)
+(
+
+class UsingSaberExampleSiteConfiguration = TestConfiguration (
+	"Test configuration for class SaberTests`RequestToHandlerResolutionTestCase - should be nested within"
+)
+('configuration methods'
+configure: ideNamespace <Namespace> ^ <Class> = (
+	"Edit this method to return the class under test"
+	| platform saber unitTesting |
+	platform:: ideNamespace Platform new.
+	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
+	saber:: ideNamespace SaberApplication 
+		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
+	^ (ideNamespace SaberTests 
+		usingPlatform: platform
+		testing: saber
+		testFramework: unitTesting
+		) RequestToHandlerResolutionTestCase
+)
+
+testModuleName ^ <Symbol> = (
+		"Don't change - class under test needs to match returned name!"
+		^ #'SaberTests`RequestToHandlerResolutionTestCase'.
+	)
+
+)'as yet unclassified'
+testProcessShouldReturnFooWhenNodesHasASingleNodeCalledFor = (
+	| site m n nodes foo|
+	site:: saber site.
+	m:: (saber getMirrorFor: site class) mixin classes mirrorNamed: 'SiteRoot'.
+	foo:: m mixin classes mirrorNamed: 'foo'.
+	nodes:: OrderedCollection newFrom: ('/foo' subStrings: '/').
+	n:: (saber process: m nodes: nodes req: nil).
+	
+	self assert: [n = foo].
+)
+
+testProcessShouldReturnNotFoundStringWhenNodesContainNamesThatArentInSiteRootsNestedClassHierarchy = (
+	| site m n nodes foo|
+	site:: saber site.
+	m:: (saber getMirrorFor: site class) mixin classes mirrorNamed: 'SiteRoot'.
+	foo:: 'not found'.
+	nodes:: OrderedCollection newFrom: ('/foo/sdfsdfsd' subStrings: '/').
+	n:: (saber process: m nodes: nodes req: nil).
+	
+	self assert: [n = foo].
+)
+
+testProcessShouldReturnSiteRootForEmptyNodeList = (
+	| site m n nodes|
+	site:: saber site.
+	m:: (saber getMirrorFor: site class) mixin classes mirrorNamed: 'SiteRoot'.
+	nodes:: OrderedCollection new.
+	n:: (saber process: (m) nodes: nodes req: nil).
+	
+	self assert: [n = m].
+)
+
+test_should_return_custom_404_HttpResponse_when_a_there_is_no_matching_handler_for_a_route_and_a_SaberNotFoundHandler_is_defined_and_nested_within_the_SiteRoot = (
+	| nfhi response req contents siteMirror |
+	siteMirror:: (saber getMirrorFor: saber site class).
+	nfhi:: saber getNotFoundHandlerFrom: (siteMirror mixin classes mirrorNamed: 'SiteRoot') fromInstance: (saber site).
+	req:: HttpRequest new.
+	req url: '/foo/bar'.
+	response:: nfhi onGet: req.
+	contents:: response contents upToEnd.
+	assert: [ contents asString = ( 'route: "', req url, '" was not found.')].
+)
+
+)
+
+class RequestToHandlerResolutionWithParametersTestCase selector: s <Symbol> =  TestCase selector: s (
+"matching requests up to a handler when traversing parameters comes into the picture"
+|
+	saber = sut.
+|
+)
+(
+
+class UsingSaberExampleSiteConfiguration = TestConfiguration (
+	"Test configuration for class SaberTests`RequestToHandlerResolutionWithParametersTestCase - should be nested within"
+)
+('configuration methods'
+configure: ideNamespace <Namespace> ^ <Class> = (
+	"Edit this method to return the class under test"
+	| platform saberApp unitTesting |
+	platform:: ideNamespace Platform new.
+	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
+	saberApp:: ideNamespace SaberApplication 
+		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
+	^ (ideNamespace SaberTests 
+		usingPlatform: platform
+		testing: saberApp
+		testFramework: unitTesting
+		) RequestToHandlerResolutionWithParametersTestCase
+)
+
+testModuleName ^ <Symbol> = (
+		"Don't change - class under test needs to match returned name!"
+		^ #'SaberTests`RequestToHandlerResolutionWithParametersTestCase'.
+	)
+
+)'as yet unclassified'
+test_making_a_request_for_bar_john_show_in_SaberExampleSite_should_return_the_show_handler_nested_within_the_nameParam_SaberParameterHandler = (
+	| req handler |
+	req:: HttpRequest new.
+	req initStatusString: 'GET /bar/john/show HTTP/1.1'.
+	handler:: saber doRouting: (saber site) req: req.
+	assert:: [ handler name asString = 'show' ].
+	assert:: [ (req getFields at: 'nameParam') = 'john' ].
+)
+
+)
+
+class ReflectionTestCase selector: s <Symbol> = TestCase selector: s(
+"Describe the class in this comment."
+|
+	saber = sut.
+|
+)
+(
+
+class UsingSaberExampleSiteConfiguration = TestConfiguration (
+	"Test configuration for class SaberTests`ReflectionTestCase - should be nested within"
+)
+('configuration methods'
+configure: ideNamespace <Namespace> ^ <Class> = (
+	"Edit this method to return the class under test"
+	| platform saberApp unitTesting |
+	platform:: ideNamespace Platform new.
+	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
+	saberApp:: ideNamespace SaberApplication 
+		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
+	^ (ideNamespace SaberTests 
+		usingPlatform: platform
+		testing: saberApp
+		testFramework: unitTesting
+		) ReflectionTestCase
+)
+
+testModuleName ^ <Symbol> = (
+		"Don't change - class under test needs to match returned name!"
+		^ #'SaberTests`ReflectionTestCase'.
+	)
+
+)'as yet unclassified'
+test_can_get_breadcrumb_for_Baz_going_back_to_SaberExampleSite = (
+	| handler list |
+	handler:: saber process: ((saber getMirrorFor: saber site class) mixin classes mirrorNamed: 'SiteRoot') nodes: (OrderedCollection newFrom:('/bar/baz' subStrings: '/') ) req: nil.
+	list:: saber breadcrumbsFrom: handler.
+	assert: [list size = 4].
+	assert: [list first = #SaberExampleSite].
+	assert: [list last = #baz].
+)
+
+test_getHandlersFrom_should_return_foo_and_bar_when_getting_handlers_in_SiteRoot = (
+	| srm handlers |
+	srm:: (saber getMirrorFor: (saber site class)) mixin classes mirrorNamed: 'SiteRoot'.
+	handlers:: saber getHandlersFrom: srm.
+	assert: [ handlers size = 2 ].
+	assert: [ (handlers at: 2) name asString = 'foo'].
+)
+
+test_getMirror_returns_mirror_for_provided_class = (
+	| m site mName |
+	site:: saber site.
+	m:: saber getMirrorFor: site SiteRoot.
+	mName:: m name.
+	assert: [ m class = NS2ClassStencilMirror ].
+	assert: [ mName = 'SiteRoot' ].
+)
+
+test_handler_instance_created_via_reflection_should_be_able_to_return_an_HttpResponse = (
+	| srm handler inst |
+	srm:: (saber getMirrorFor: (saber site class)) mixin classes mirrorNamed: 'SiteRoot'.
+	handler:: (saber getHandlersFrom: srm) at: 2.
+	
+	inst:: saber getInstanceFor: handler from: (saber site).
+	
+	assert: [ ((inst onGet: nil) class) = HttpResponse ]
+)
+
+test_should_return_Name_param_handler_when_looking_for_a_param_handler_in_Bar = (
+	| barMirror paramHandler |
+	barMirror:: ((saber getMirrorFor: ( saber site class )) mixin classes mirrorNamed: 'SiteRoot') mixin classes mirrorNamed: 'bar'.
+	paramHandler:: saber getParamHandlerFrom: barMirror.
+	assert: [ paramHandler name = #nameParam ]
+)
+
+)
+
+class SaberStaticFileHandlerTestCase selector: s <Symbol> = TestCase selector: s(
+"dealing with the SaberStaticFileHandler"
+|
+	saber = sut.
+|
+)
+(
+
+class UsingSaberExampleSiteConfiguration = TestConfiguration (
+	"Test configuration for class SaberTests`SaberStaticFileHandlerTestCase - should be nested within"
+)
+('configuration methods'
+configure: ideNamespace <Namespace> ^ <Class> = (
+	"Edit this method to return the class under test"
+	| platform saberApp unitTesting |
+	platform:: ideNamespace Platform new.
+	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
+	saberApp:: ideNamespace SaberApplication 
+		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
+	^ (ideNamespace SaberTests 
+		usingPlatform: platform
+		testing: saberApp
+		testFramework: unitTesting
+		) SaberStaticFileHandlerTestCase
+)
+
+testModuleName ^ <Symbol> = (
+		"Don't change - class under test needs to match returned name!"
+		^ #'SaberTests`SaberStaticFileHandlerTestCase'.
+	)
+
+)'as yet unclassified'
+test_the_site_should_register_an_alias_containing_for_each_SaberStaticFileHandler_in_SiteRoot = (
+	| modAsm coreMod |
+	modAsm:: (saber buildModuleAssembly).
+	coreMod:: modAsm moduleStack at: 1.
+	assert: [ (coreMod subModules at: 1) class name = 'ModAlias' ].
+	assert: [ (coreMod subModules at: 1) pathPrefix = '/static' ].	
+)
+
+))

@@ -1,0 +1,44 @@
+Newsqueak2
+'Saber'
+
+class SaberParameterHandler = (
+"
+a handler for a 'parameter' in a RESTful style url, so that you can make handlers that won't require the user to attach query strings.
+
+For example:
+given the following SiteRoot
+SiteRoot << SaberHandler
+SiteRoot`Foo << SaberHandler
+SiteRoot`Bar << SaberHandler
+SiteRoot`Bar`Baz << SaberHandler
+SiteRoot`Bar`Blah << SaberParameterHandler
+SiteRoot`Bar`Blah`Feh << SaberHandler
+
+a request for '/foo/bar/baz' will return the Baz SaberHandler, but what about a request for '/foo/bar/username/feh' ? In this case, since there is no handler matching the 'username' node, but there *is* a parameter handler, we would 'dive' into Blah, (assigning the value of 'username' to the request with the #Blah key) and then match on the Feh SaberHandler.
+
+Essentially, a SaberParameterHandler will act as a 'catch-all' handler if and only if none of the actual handler classes nested in a handler are matched. The value of the node that was not matched will be stored in request as a string, using the class name of the class subclassing SaberParameterHandler as the key. As such, don't have duplicate parameter names in a hierarchy.
+
+Aside from this unique routing behavior at request-time, a SaberParameterHandler behaves exactly like a SaberHandler.
+
+"
+|
+|
+)
+('as yet unclassified'
+onDelete: request = (
+	^ '404'
+)
+
+onGet: request = (
+	^ '404'
+)
+
+onPost: request = (
+	^ '404'
+)
+
+onPut: request = (
+	^ '404'
+)
+
+)

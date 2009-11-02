@@ -1,0 +1,16 @@
+Newsqueak2
+'Saber'
+
+class SaberStaticFileHandler = (
+"
+Handles serving static files in a Saber site.
+"
+|
+|
+)
+('as yet unclassified'
+documentRoot = (
+	subclassResponsibility
+)
+
+)

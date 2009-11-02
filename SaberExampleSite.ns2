@@ -1,0 +1,106 @@
+Newsqueak2
+'Saber'
+
+class SaberExampleSite usingPlatform: p = (
+"
+Quick start:
+| site = nil. | site:: (SaberExampleSite usingPlatform: Platform new). SaberApplication withSite: site.
+"
+|
+	platform = p.
+	HttpResponse = p HttpResponse.
+	NS2Reflection = p NS2Reflection.
+	SaberHandler = p SaberHandler.
+	FileDirectory = p FileDirectory.
+	
+	port = nil.
+	name = nil.
+	SaberNotFoundHandler = p SaberNotFoundHandler.
+	SaberParameterHandler = p SaberParameterHandler.
+	SaberStaticFileHandler = p SaberStaticFileHandler.
+|
+port:: 8083.
+name:: 'TestSite1'.
+)
+(
+
+class SiteRoot = SaberHandler(
+"Describe the class in this comment."
+|
+|
+)
+(
+
+class static = SaberStaticFileHandler (
+|
+|
+)
+('as yet unclassified'
+documentRoot = (
+	^ (FileDirectory default fullName, FileDirectory slash, 'static')
+)
+
+)
+
+class foo = SaberHandler(
+"/foo"
+|
+|
+)
+('as yet unclassified'
+onGet: request = (
+	^ HttpResponse fromString: 'GET handler for /foo'
+)
+
+)
+
+class bar = SaberHandler (
+"/bar"
+|
+|
+)
+(
+
+class nameParam = SaberParameterHandler (
+"/bar/{nameParam}"
+|
+|
+)
+(
+
+class show = SaberHandler(
+"/bar/{nameParam}/show"
+|
+|
+)
+('as yet unclassified'
+onGet: request = (
+	| wife |
+	wife:: request getFields at: 'wife' ifAbsent: [ 'your sister' ].
+	^ HttpResponse fromString: 'Hi, ', (request getFields at: 'nameParam'), '! How is ', wife, '?'
+)
+
+))
+
+class baz = SaberHandler (
+"/bar/baz -- no overriden method handlers."
+|
+|
+)
+())
+
+class NotFound = SaberNotFoundHandler(
+|
+|
+)
+('as yet unclassified'
+onGet: request = (
+	^ HttpResponse fromString: ('route: "', request url, '" was not found.')
+)
+
+)'as yet unclassified'
+onGet: request = (
+	^HttpResponse fromString: 'welcome to the hello world!'
+)
+
+))

@@ -1,0 +1,34 @@
+Newsqueak2
+'Saber'
+
+class SaberHandler = (
+"The basic unit of functionality for a Saber-drven site.
+
+Each SaberHandler, at a minimum, provides an implementation for one-or-more
+selectors derived from HTTP verbs (onGet: for GET requests, onPost: for POST, etc). Each verb provides a default implementation that returns a 404 response. So just override the verbs you want to implement for a given SaberHandler.
+
+Also, a class that derives from SaberHandler may itself contain a number of nested classes. Of these classes, any classes that are also derived from SaberHandler will be treated as another 'folder' in a url path. For example:
+
+Given two classes: Foo and Foo`Bar (Bar is nested within Foo), Bar would be matched on a request to '/foo/bar', while Foo would be evaluated on a request to just '/foo'. For the purposes of route evaluation/matching, the names of the derived SaberHandlers are treated as being case insensitive. So Foo`Bar matches a request to /Foo/Bar or /foo/bar, etc.
+"
+|
+|
+)
+('as yet unclassified'
+onDelete: request = (
+	^ '404'
+)
+
+onGet: request = (
+	^ '404'
+)
+
+onPost: request = (
+	^ '404'
+)
+
+onPut: request = (
+	^ '404'
+)
+
+)
