@@ -17,6 +17,14 @@ besides that.. a Saber site needs to have a single class named 'SiteRoot' that d
 Within an individual SaberHandler, are a number of methods corresponding to HTTP
 'verbs' (get:, post:, put:, etc) .. Each of the methods take a single argument: the 
 HttpRequest for the HTTP transaction.
+
+Copyright 2009 Jeff Olson
+
+Licensed under the Apache License, Version 2.0 (the 'License'); you may not use this file except in compliance with the License. You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
 "
 |
 	p = theSite platform.	

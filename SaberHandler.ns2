@@ -10,6 +10,14 @@ selectors derived from HTTP verbs (onGet: for GET requests, onPost: for POST, et
 Also, a class that derives from SaberHandler may itself contain a number of nested classes. Of these classes, any classes that are also derived from SaberHandler will be treated as another 'folder' in a url path. For example:
 
 Given two classes: Foo and Foo`Bar (Bar is nested within Foo), Bar would be matched on a request to '/foo/bar', while Foo would be evaluated on a request to just '/foo'. For the purposes of route evaluation/matching, the names of the derived SaberHandlers are treated as being case insensitive. So Foo`Bar matches a request to /Foo/Bar or /foo/bar, etc.
+
+Copyright 2009 Jeff Olson
+
+Licensed under the Apache License, Version 2.0 (the 'License'); you may not use this file except in compliance with the License. You may obtain a copy of the License at 
+
+    http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
 "
 |
 |
