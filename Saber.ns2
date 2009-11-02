@@ -1,11 +1,9 @@
 Newsqueak2
 'Saber'
 
-class SaberApplication withSite: theSite = (
+class Saber withSite: theSite = (
 "
 Saber is a web application framework for Newspeak2.
-quick start:
-	(Saber usingPlatform: Platform new) startWithSiteRoot: app
 
 app is the actual web site definition and roughly speaking has a 'interface'
 that it needs to implement. It needs to respond to the following messages:

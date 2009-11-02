@@ -4,7 +4,7 @@ Newsqueak2
 class SaberExampleSite usingPlatform: p = (
 "
 Quick start:
-| site = nil. | site:: (SaberExampleSite usingPlatform: Platform new). SaberApplication withSite: site.
+Saber withSite: (SaberExampleApplication usingPlatform: Platform new)
 "
 |
 	platform = p.

@@ -29,14 +29,14 @@ class UsingSaberExampleSiteConfiguration = TestConfiguration (
 ('configuration methods'
 configure: ideNamespace <Namespace> ^ <Class> = (
 	"Edit this method to return the class under test"
-	| platform saber unitTesting |
+	| platform saberApp unitTesting |
 	platform:: ideNamespace Platform new.
 	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
-	saber:: ideNamespace SaberApplication 
+	saberApp:: ideNamespace Saber
 		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
 	^ (ideNamespace SaberTests 
 		usingPlatform: platform
-		testing: saber
+		testing: saberApp
 		testFramework: unitTesting
 		) RequestToHandlerResolutionTestCase
 )
@@ -109,7 +109,7 @@ configure: ideNamespace <Namespace> ^ <Class> = (
 	| platform saberApp unitTesting |
 	platform:: ideNamespace Platform new.
 	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
-	saberApp:: ideNamespace SaberApplication 
+	saberApp:: ideNamespace Saber
 		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
 	^ (ideNamespace SaberTests 
 		usingPlatform: platform
@@ -152,7 +152,7 @@ configure: ideNamespace <Namespace> ^ <Class> = (
 	| platform saberApp unitTesting |
 	platform:: ideNamespace Platform new.
 	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
-	saberApp:: ideNamespace SaberApplication 
+	saberApp:: ideNamespace Saber
 		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
 	^ (ideNamespace SaberTests 
 		usingPlatform: platform
@@ -229,7 +229,7 @@ configure: ideNamespace <Namespace> ^ <Class> = (
 	| platform saberApp unitTesting |
 	platform:: ideNamespace Platform new.
 	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
-	saberApp:: ideNamespace SaberApplication 
+	saberApp:: ideNamespace Saber
 		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
 	^ (ideNamespace SaberTests 
 		usingPlatform: platform
