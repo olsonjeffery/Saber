@@ -59,14 +59,18 @@ class Views = (
 )
 (
 
-class MainBase usingPlatform: p = SaberView usingPlatform: p (
+class MainBase platform: p parent: theP = SaberView platform: p parent: theP (
 |
 |
 )
-(
+('as yet unclassified'
+content = (
+	^ ''
+)
 
-class SiteRootView usingPlatform: p  = SaberView usingPlatform: p (
-|
+)
+
+class SiteRootView platform: p parent: theP = SaberView platform: p parent: theP(|
 |
 )
 ('as yet unclassified'
@@ -83,11 +87,6 @@ content = (
 </html>
 	'
 	].
-)
-
-)'as yet unclassified'
-content = (
-	^ ''
 )
 
 ))
@@ -170,7 +169,9 @@ onGet: request = (
 
 )'as yet unclassified'
 getView = (
-	^ (Views new MainBase usingPlatform: platform) SiteRootView usingPlatform: platform
+	| base |
+	base:: (Views new MainBase platform: platform parent: nil). 
+	^ Views new SiteRootView platform: platform parent: base.
 )
 
 onGet: request = (

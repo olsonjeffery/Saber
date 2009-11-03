@@ -1,7 +1,7 @@
 Newsqueak2
 'Saber'
 
-class SaberView usingPlatform: p= (
+class SaberView platform: p parent: theParentView= (
 "The unit for modelling a server-generated UI in Saber
 
 Copyright 2009 Jeff Olson
@@ -16,6 +16,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 	Error = p Error.
 	Dictionary = p Dictionary.
 	theModel= nil.
+	theParent = theParentView.
 |
 )
 ('as yet unclassified'
@@ -42,6 +43,10 @@ getGetModelValueKeyFrom: aStream = (
 model = (
 	theModel = nil ifTrue: [ theModel:: Dictionary new. ].
 	^ theModel.
+)
+
+parent = (
+	^ theParent
 )
 
 render = (
