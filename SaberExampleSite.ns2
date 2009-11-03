@@ -26,6 +26,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 	SaberParameterHandler = p SaberParameterHandler.
 	SaberStaticFileHandler = p SaberStaticFileHandler.
 	SaberView = p SaberView.
+	Dictionary = p Dictionary.
 |
 port:: 8083.
 name:: 'TestSite1'.
@@ -58,19 +59,30 @@ class Views = (
 )
 (
 
-class MainBase = SaberView (
+class MainBase usingPlatform: p = SaberView usingPlatform: p (
 |
 |
 )
 (
 
-class SiteRootView = SaberView (
+class SiteRootView usingPlatform: p  = SaberView usingPlatform: p (
 |
 |
 )
 ('as yet unclassified'
 content = (
-	^ ''
+	^ defineRawMarkup: [
+	'
+<html>
+	<head>
+		<title>SaberExampleSite</title>
+	</head>
+	<body>
+		{ content }
+	</body>
+</html>
+	'
+	].
 )
 
 )'as yet unclassified'
@@ -157,8 +169,16 @@ onGet: request = (
 )
 
 )'as yet unclassified'
+getView = (
+	^ (Views new MainBase usingPlatform: platform) SiteRootView usingPlatform: platform
+)
+
 onGet: request = (
-	^HttpResponse fromString: 'welcome to the hello world!'
+	| body model view |
+	view:: getView.
+	view model at: 'content' put: 'hello world!!! view engine works.'.
+	body:: view render.
+	^HttpResponse fromString: body.
 )
 
 ))

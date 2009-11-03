@@ -1,7 +1,7 @@
 Newsqueak2
 'Saber'
 
-class SaberView = (
+class SaberView usingPlatform: p= (
 "The unit for modelling a server-generated UI in Saber
 
 Copyright 2009 Jeff Olson
@@ -12,7 +12,10 @@ Licensed under the Apache License, Version 2.0 (the 'License'); you may not use 
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
 "
-|
+|	
+	Error = p Error.
+	Dictionary = p Dictionary.
+	theModel= nil.
 |
 )
 ('as yet unclassified'
@@ -20,8 +23,55 @@ content = (
 	subclassResponsibility
 )
 
+defineRawMarkup: block = (
+	^ block value.
+)
+
+getGetModelValueKeyFrom: aStream = (
+	| result curr |
+	result:: String new writeStream.
+
+	[aStream atEnd or: [(curr:: aStream next) == $}]]
+		whileFalse: [
+			result nextPut: curr
+		].
+
+	^ result contents withBlanksTrimmed
+)
+
+model = (
+	theModel = nil ifTrue: [ theModel:: Dictionary new. ].
+	^ theModel.
+)
+
+render = (
+	^ renderWith: model.
+)
+
 renderWith: aModel = (
-	^ ''
+	^ resolveMarkup: content withModel: aModel.
+)
+
+resolveMarkup: rawMarkup withModel: model = (
+	| result stream |
+	result:: String new writeStream.
+	stream:: rawMarkup readStream.
+
+	[stream atEnd]
+		whileFalse: [| currentChar | 
+			currentChar:: stream next.
+			currentChar == ${
+				ifTrue: [| key | 
+					key:: getGetModelValueKeyFrom: stream.
+					result nextPutAll: (model at: key ifAbsent: [ (Error new messageText: ('model does not contain key "', key, '" in view "',class name asString,'"')) signal ]).
+				]
+				ifFalse: [
+					currentChar == $\
+						ifTrue: [stream atEnd
+								ifFalse: [result nextPut: stream next]]
+						ifFalse: [result nextPut: currentChar]]].
+
+	^ result contents
 )
 
 )

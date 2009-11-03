@@ -17,13 +17,60 @@ Unless required by applicable law or agreed to in writing, software distributed 
 	TestCase = unitTesting TestCase.
 	TestConfiguration = unitTesting TestConfiguration.
 	OrderedCollection = platform OrderedCollection.
+	Dictionary = platform Dictionary.
 	NS2ClassStencilMirror = platform NS2ClassStencilMirror.
 	HttpResponse = platform HttpResponse.
 	HttpRequest = platform HttpRequest.
 	sut = theSut.
+	p = platform.
+	
+	SaberView = platform SaberView.
 |
 )
 (
+
+class RequestToHandlerResolutionWithParametersTestCase selector: s <Symbol> =  TestCase selector: s (
+"matching requests up to a handler when traversing parameters comes into the picture"
+|
+	saber = sut.
+|
+)
+(
+
+class UsingSaberExampleSiteConfiguration = TestConfiguration (
+	"Test configuration for class SaberTests`RequestToHandlerResolutionWithParametersTestCase - should be nested within"
+)
+('configuration methods'
+configure: ideNamespace <Namespace> ^ <Class> = (
+	"Edit this method to return the class under test"
+	| platform saberApp unitTesting |
+	platform:: ideNamespace Platform new.
+	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
+	saberApp:: ideNamespace Saber
+		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
+	^ (ideNamespace SaberTests 
+		usingPlatform: platform
+		testing: saberApp
+		testFramework: unitTesting
+		) RequestToHandlerResolutionWithParametersTestCase
+)
+
+testModuleName ^ <Symbol> = (
+		"Don't change - class under test needs to match returned name!"
+		^ #'SaberTests`RequestToHandlerResolutionWithParametersTestCase'.
+	)
+
+)'as yet unclassified'
+test_making_a_request_for_bar_john_show_in_SaberExampleSite_should_return_the_show_handler_nested_within_the_nameParam_SaberParameterHandler = (
+	| req handler |
+	req:: HttpRequest new.
+	req initStatusString: 'GET /bar/john/show HTTP/1.1'.
+	handler:: saber doRouting: (saber site) req: req.
+	assert:: [ handler name asString = 'show' ].
+	assert:: [ (req getFields at: 'nameParam') = 'john' ].
+)
+
+)
 
 class RequestToHandlerResolutionTestCase selector: s <Symbol> = TestCase selector: s(
 "Describe the class in this comment."
@@ -102,8 +149,8 @@ test_should_return_custom_404_HttpResponse_when_a_there_is_no_matching_handler_f
 
 )
 
-class RequestToHandlerResolutionWithParametersTestCase selector: s <Symbol> =  TestCase selector: s (
-"matching requests up to a handler when traversing parameters comes into the picture"
+class SaberStaticFileHandlerTestCase selector: s <Symbol> = TestCase selector: s(
+"dealing with the SaberStaticFileHandler"
 |
 	saber = sut.
 |
@@ -111,7 +158,7 @@ class RequestToHandlerResolutionWithParametersTestCase selector: s <Symbol> =  T
 (
 
 class UsingSaberExampleSiteConfiguration = TestConfiguration (
-	"Test configuration for class SaberTests`RequestToHandlerResolutionWithParametersTestCase - should be nested within"
+	"Test configuration for class SaberTests`SaberStaticFileHandlerTestCase - should be nested within"
 )
 ('configuration methods'
 configure: ideNamespace <Namespace> ^ <Class> = (
@@ -125,22 +172,109 @@ configure: ideNamespace <Namespace> ^ <Class> = (
 		usingPlatform: platform
 		testing: saberApp
 		testFramework: unitTesting
-		) RequestToHandlerResolutionWithParametersTestCase
+		) SaberStaticFileHandlerTestCase
 )
 
 testModuleName ^ <Symbol> = (
 		"Don't change - class under test needs to match returned name!"
-		^ #'SaberTests`RequestToHandlerResolutionWithParametersTestCase'.
+		^ #'SaberTests`SaberStaticFileHandlerTestCase'.
 	)
 
 )'as yet unclassified'
-test_making_a_request_for_bar_john_show_in_SaberExampleSite_should_return_the_show_handler_nested_within_the_nameParam_SaberParameterHandler = (
-	| req handler |
-	req:: HttpRequest new.
-	req initStatusString: 'GET /bar/john/show HTTP/1.1'.
-	handler:: saber doRouting: (saber site) req: req.
-	assert:: [ handler name asString = 'show' ].
-	assert:: [ (req getFields at: 'nameParam') = 'john' ].
+test_the_site_should_register_an_alias_containing_for_each_SaberStaticFileHandler_in_SiteRoot = (
+	| modAsm coreMod |
+	modAsm:: (saber buildModuleAssembly).
+	coreMod:: modAsm moduleStack at: 1.
+	assert: [ (coreMod subModules at: 1) class name = 'ModAlias' ].
+	assert: [ (coreMod subModules at: 1) pathPrefix = '/static' ].	
+)
+
+)
+
+class ViewRenderingTestCase selector: s <Symbol> = TestCase selector: s(
+"Specs for the view rendering story in Saber"
+|
+	site = sut.
+	Error = p Error.
+|
+)
+(
+
+class UsingSaberExampleSiteConfiguration = TestConfiguration (
+	"Test configuration for class SaberTests`ViewRenderingTestCase - should be nested within"
+)
+('configuration methods'
+configure: ideNamespace <Namespace> ^ <Class> = (
+	| platform theSite unitTesting |
+	platform:: ideNamespace Platform new.
+	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
+	theSite:: ideNamespace SaberExampleSite usingPlatform: platform.
+	^ (ideNamespace SaberTests 
+		usingPlatform: platform
+		testing: theSite
+		testFramework: unitTesting
+		) ViewRenderingTestCase
+)
+
+testModuleName ^ <Symbol> = (
+		"Don't change - class under test needs to match returned name!"
+		^ #'SaberTests`ViewRenderingTestCase'.
+	)
+
+)
+
+class ValueView usingPlatform: platform= SaberView usingPlatform: platform(
+"Describe the class in this comment."
+|
+|
+)
+('as yet unclassified'
+content = (
+	^ defineRawMarkup: [
+	'{ test }'
+	]
+)
+
+)'as yet unclassified'
+test_when_attempting_to_define_a_base_block_on_a_view_that_inherits_from_another_view_it_should_cause_an_error = (
+	assert: [true = false].
+)
+
+test_when_attempting_to_define_a_base_block_on_a_view_with_no_parent_it_Should_be_allowed = (
+	assert: [true = false].
+)
+
+test_when_calling_the_render_selector_on_a_SaberHandler_for_a_view_it_should_return_the_views_string_packaged_in_a_HttpResponse = (
+	assert: [true = false].
+)
+
+test_when_rendering_a_view_by_itself_it_should_return_a_string_for_the_response = (
+	assert: [true = false].
+)
+
+test_when_rendering_a_view_that_calls_for_values_from_a_model_it_should_resolve_the_values_and_interpolate_them_with_the_view = (
+	| view model actual expected |
+	view:: ValueView usingPlatform: p.
+	model:: Dictionary new.
+	expected:: 'foo'.
+	model at: 'test' put: expected.
+
+	actual:: view renderWith: model.
+
+	assert: [actual = expected].
+)
+
+test_when_rendering_a_view_that_inherits_from_another_view_the_child_view_should_have_its_specified_blocks_override_those_of_the_parent = (
+	assert: [true = false].
+)
+
+test_when_rendering_a_view_with_a_viewModel_and_the_model_doesnt_contain_a_key_referenced_in_the_view_markup_it_should_cause_an_error = (
+	| view model actual expected |
+	view:: ValueView usingPlatform: p.
+	model:: Dictionary new.
+	expected:: 'foo'.
+
+	self should: [view renderWith: model.] raise: Error.
 )
 
 )
@@ -218,48 +352,6 @@ test_should_return_Name_param_handler_when_looking_for_a_param_handler_in_Bar = 
 	barMirror:: ((saber getMirrorFor: ( saber site class )) mixin classes mirrorNamed: 'SiteRoot') mixin classes mirrorNamed: 'bar'.
 	paramHandler:: saber getParamHandlerFrom: barMirror.
 	assert: [ paramHandler name = #nameParam ]
-)
-
-)
-
-class SaberStaticFileHandlerTestCase selector: s <Symbol> = TestCase selector: s(
-"dealing with the SaberStaticFileHandler"
-|
-	saber = sut.
-|
-)
-(
-
-class UsingSaberExampleSiteConfiguration = TestConfiguration (
-	"Test configuration for class SaberTests`SaberStaticFileHandlerTestCase - should be nested within"
-)
-('configuration methods'
-configure: ideNamespace <Namespace> ^ <Class> = (
-	"Edit this method to return the class under test"
-	| platform saberApp unitTesting |
-	platform:: ideNamespace Platform new.
-	unitTesting:: ideNamespace NSUnit NSUnit usingPlatform: platform.
-	saberApp:: ideNamespace Saber
-		withSite: (ideNamespace SaberExampleSite usingPlatform: platform).
-	^ (ideNamespace SaberTests 
-		usingPlatform: platform
-		testing: saberApp
-		testFramework: unitTesting
-		) SaberStaticFileHandlerTestCase
-)
-
-testModuleName ^ <Symbol> = (
-		"Don't change - class under test needs to match returned name!"
-		^ #'SaberTests`SaberStaticFileHandlerTestCase'.
-	)
-
-)'as yet unclassified'
-test_the_site_should_register_an_alias_containing_for_each_SaberStaticFileHandler_in_SiteRoot = (
-	| modAsm coreMod |
-	modAsm:: (saber buildModuleAssembly).
-	coreMod:: modAsm moduleStack at: 1.
-	assert: [ (coreMod subModules at: 1) class name = 'ModAlias' ].
-	assert: [ (coreMod subModules at: 1) pathPrefix = '/static' ].	
 )
 
 ))
