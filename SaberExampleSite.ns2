@@ -3,8 +3,7 @@ Newsqueak2
 
 class SaberExampleSite usingPlatform: p = (
 "
-Quick start:
-Saber withSite: (SaberExampleApplication usingPlatform: Platform new)
+Quick start: Saber withSite: (SaberExampleApplication usingPlatform: Platform new)
 
 Copyright 2009 Jeff Olson
 
@@ -26,6 +25,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 	SaberNotFoundHandler = p SaberNotFoundHandler.
 	SaberParameterHandler = p SaberParameterHandler.
 	SaberStaticFileHandler = p SaberStaticFileHandler.
+	SaberView = p SaberView.
 |
 port:: 8083.
 name:: 'TestSite1'.
@@ -47,6 +47,35 @@ class FooService = (
 ('as yet unclassified'
 getThing = (
 	^ 'Hello world from FooService!'
+)
+
+))
+
+class Views = (
+"container for all of the Views in SaberExampleSite"
+|
+|
+)
+(
+
+class MainBase = SaberView (
+|
+|
+)
+(
+
+class SiteRootView = SaberView (
+|
+|
+)
+('as yet unclassified'
+content = (
+	^ ''
+)
+
+)'as yet unclassified'
+content = (
+	^ ''
 )
 
 ))
