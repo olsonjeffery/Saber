@@ -259,6 +259,21 @@ test_when_getting_the_block_names_from_some_markup_that_contains_a_two_named_blo
 	assert: [(names at: 2) = 'again' ].
 )
 
+test_when_getting_the_start_and_end_index_for_a_block_from_some_markup_it_should_return_the_valid_start_and_end_position_in_that_markup = (
+	| view markup indices expectedStart expectedEnd blockInnerText |
+	view:: ValueView platform: p parent: nil.
+	blockInnerText:: '?foo!'.
+	markup:: '<% block test %>', blockInnerText, '<% endblock %>'.
+
+	expectedStart:: markup indexOf: $?.
+	expectedEnd:: markup indexOf: $!.
+	indices:: view getIndicesForBlockNamed: 'test' from: markup.
+
+	should: [indices size = 2].
+	should: [(indices at: 1) = expectedStart].
+	should: [(indices at: 2) = expectedEnd].
+)
+
 test_when_merging_two_sets_of_markup_and_the_child_markup_specifies_a_block_that_is_defined_in_the_parent_markup_it_should_override_the_parents_block_in_the_merged_markup = (
 	| childMarkup parentMarkup finalMarkup |
 	assert: [true = false].

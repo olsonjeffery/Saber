@@ -49,7 +49,9 @@ defineRawMarkup: block = (
 )
 
 getBlockFrom: markup named: blockName = (
-	^ ''
+	| indices |
+	indices:: getIndicesForBlockNamed: blockName from: markup.
+	^ markup copyFrom: (indices at: 1) to: (indices at: 2).
 )
 
 getCharactersInStream: stream upTo: char = (
@@ -68,6 +70,13 @@ getGetModelValueKeyFrom: aStream = (
 	^ getCharactersInStream: aStream upTo: $}.
 )
 
+getIndicesForBlockNamed: blockName from: markup = (
+	| start end |
+	start:: 0.
+	end:: 0.
+	^ { start. end. }
+)
+
 integrate: childMarkup model: aModel = (
 	| finalMarkup integratedMarkup thisMarkup |
 	thisMarkup:: resolveMarkup: content withModel: aModel.
@@ -79,22 +88,31 @@ integrate: childMarkup model: aModel = (
 	^ finalMarkup
 )
 
-lookForBlockNameIn: text toAddTo: names = (
+lookForBlockNameIn: text = (
 	| blockName blockOpener blockClose |
 	blockName:: nil.
 	blockOpener:: (text asLowercase findString: 'block ' startingAt: 1) = 1.
 	blockOpener ifTrue: [blockName:: text copyFrom: 7 to: text size]
-		ifFalse: [(text asLowercase findString: 'endblock' startingAt: 1) = 1
+		ifFalse: [(textIsEndBlock: text)
 					ifFalse: [(Error new messageText: 'invalid block: "',text,'"') signal]].
+	^ blockName.
+)
+
+lookForBlockNameIn: text toAddTo: names = (
+	| blockName |
+	blockName:: lookForBlockNameIn: text.
 	blockName = nil ifFalse: [names add: blockName]
 )
 
 merge: childMarkup into: parentMarkup = (
-	| finalMarkup blockTexts childBlock|
+	| finalMarkup blockTexts childBlock childBlockNames |
+	childBlockNames:: blockNamesFrom: childMarkup.
 	finalMarkup:: parentMarkup.
 	(blockNamesFrom: parentMarkup) do: [ :blockName |
-		childBlock:: getBlockFrom: childMarkup named: blockName.
-		finalMarkup:: childBlock = nil ifFalse: [ replaceBlocksNamed: blockName in: finalMarkup with: childBlock].
+		(childBlockNames contains: [ :i | i = blockName ]) ifTrue: [
+			childBlock:: getBlockFrom: childMarkup named: blockName.
+			finalMarkup:: childBlock = nil ifFalse: [ replaceBlocksNamed: blockName in: finalMarkup with: childBlock].
+		]
 	].
 	^ finalMarkup.
 )
@@ -149,6 +167,10 @@ resolveMarkup: rawMarkup withModel: aModel = (
 						ifFalse: [result nextPut: currentChar]]].
 
 	^ result contents
+)
+
+textIsEndBlock: text = (
+	^ (text asLowercase findString: 'endblock' startingAt: 1) = 1.
 )
 
 )
