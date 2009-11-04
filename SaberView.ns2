@@ -20,12 +20,20 @@ Unless required by applicable law or agreed to in writing, software distributed 
 |
 )
 ('as yet unclassified'
+blockNamesFrom: markup = (
+	^ {}
+)
+
 content = (
 	subclassResponsibility
 )
 
 defineRawMarkup: block = (
 	^ block value.
+)
+
+getBlockFrom: markup named: blockName = (
+	^ ''
 )
 
 getGetModelValueKeyFrom: aStream = (
@@ -40,6 +48,27 @@ getGetModelValueKeyFrom: aStream = (
 	^ result contents withBlanksTrimmed
 )
 
+integrate: childMarkup model: aModel = (
+	| finalMarkup integratedMarkup thisMarkup |
+	thisMarkup:: resolveMarkup: content withModel: aModel.
+	integratedMarkup:: merge: childMarkup into: thisMarkup.
+
+	finalMarkup:: parent = nil ifTrue: [ integratedMarkup. ]
+		ifFalse: [ parent integrate: integratedMarkup model: aModel ].
+
+	^ finalMarkup
+)
+
+merge: childMarkup into: parentMarkup = (
+	| finalMarkup blockTexts childBlock|
+	finalMarkup:: parentMarkup.
+	(blockNamesFrom: parentMarkup) do: [ :blockName |
+		childBlock:: getBlockFrom: childMarkup named: blockName.
+		finalMarkup:: childBlock = nil ifFalse: [ replaceBlocksNamed: blockName in: finalMarkup with: childBlock].
+	].
+	^ finalMarkup.
+)
+
 model = (
 	theModel = nil ifTrue: [ theModel:: Dictionary new. ].
 	^ theModel.
@@ -50,11 +79,24 @@ parent = (
 )
 
 render = (
-	^ renderWith: model.
+	^ renderWith: model
 )
 
 renderWith: aModel = (
-	^ resolveMarkup: content withModel: aModel.
+	| thisMarkup finalMarkup |
+	thisMarkup:: resolveMarkup: content withModel: aModel.
+	
+	
+	finalMarkup:: parent = nil ifTrue: [ thisMarkup. ]
+		ifFalse: [
+			parent integrate: thisMarkup model: aModel.
+		].
+
+	^ finalMarkup
+)
+
+replaceBlocksNamed: blockName in: markup with: newBlock = (
+	^ ''
 )
 
 resolveMarkup: rawMarkup withModel: model = (
