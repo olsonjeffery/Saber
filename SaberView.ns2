@@ -15,13 +15,29 @@ Unless required by applicable law or agreed to in writing, software distributed 
 |	
 	Error = p Error.
 	Dictionary = p Dictionary.
+	OrderedCollection = p OrderedCollection.
 	theModel= nil.
 	theParent = theParentView.
 |
 )
 ('as yet unclassified'
 blockNamesFrom: markup = (
-	^ {}
+	| names stream blockName|
+	names:: OrderedCollection new.
+	stream:: markup readStream.
+
+	[stream atEnd]
+		whileFalse: [| currentChar | 
+			currentChar:: stream next.
+			currentChar == $<
+				ifTrue: [| key | 
+					currentChar:: stream next.
+					currentChar == $% ifTrue: [
+						lookForBlockNameIn: (getCharactersInStream: stream upTo: $%) toAddTo: names
+				].
+			].
+		].		
+	^ names.
 )
 
 content = (
@@ -36,16 +52,20 @@ getBlockFrom: markup named: blockName = (
 	^ ''
 )
 
-getGetModelValueKeyFrom: aStream = (
+getCharactersInStream: stream upTo: char = (
 	| result curr |
 	result:: String new writeStream.
 
-	[aStream atEnd or: [(curr:: aStream next) == $}]]
+	[stream atEnd or: [(curr:: stream next) == char]]
 		whileFalse: [
 			result nextPut: curr
 		].
 
 	^ result contents withBlanksTrimmed
+)
+
+getGetModelValueKeyFrom: aStream = (
+	^ getCharactersInStream: aStream upTo: $}.
 )
 
 integrate: childMarkup model: aModel = (
@@ -57,6 +77,16 @@ integrate: childMarkup model: aModel = (
 		ifFalse: [ parent integrate: integratedMarkup model: aModel ].
 
 	^ finalMarkup
+)
+
+lookForBlockNameIn: text toAddTo: names = (
+	| blockName blockOpener blockClose |
+	blockName:: nil.
+	blockOpener:: (text asLowercase findString: 'block ' startingAt: 1) = 1.
+	blockOpener ifTrue: [blockName:: text copyFrom: 7 to: text size]
+		ifFalse: [(text asLowercase findString: 'endblock' startingAt: 1) = 1
+					ifFalse: [(Error new messageText: 'invalid block: "',text,'"') signal]].
+	blockName = nil ifFalse: [names add: blockName]
 )
 
 merge: childMarkup into: parentMarkup = (
@@ -99,7 +129,7 @@ replaceBlocksNamed: blockName in: markup with: newBlock = (
 	^ ''
 )
 
-resolveMarkup: rawMarkup withModel: model = (
+resolveMarkup: rawMarkup withModel: aModel = (
 	| result stream |
 	result:: String new writeStream.
 	stream:: rawMarkup readStream.
@@ -110,7 +140,7 @@ resolveMarkup: rawMarkup withModel: model = (
 			currentChar == ${
 				ifTrue: [| key | 
 					key:: getGetModelValueKeyFrom: stream.
-					result nextPutAll: (model at: key ifAbsent: [ (Error new messageText: ('model does not contain key "', key, '" in view "',class name asString,'"')) signal ]).
+					result nextPutAll: (aModel at: key ifAbsent: [ (Error new messageText: ('model does not contain key "', key, '" in view "',class name asString,'"')) signal ]).
 				]
 				ifFalse: [
 					currentChar == $\

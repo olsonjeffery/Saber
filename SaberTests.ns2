@@ -235,6 +235,18 @@ content = (
 )
 
 )'as yet unclassified'
+test_when_getting_characters_from_current_position_to_a_character_it_should_return_the_stream_ommitting_the_delimiting_character = (
+	| str view stream output delimiter |
+	str:: 'foozie'.
+	stream:: str readStream.
+	view:: ValueView platform: p parent: nil.
+	delimiter:: $z.
+
+	output:: view getCharactersInStream: stream upTo: delimiter.
+	
+	assert: [output = 'foo'].
+)
+
 test_when_getting_the_block_names_from_some_markup_that_contains_a_two_named_blocks_it_should_return_the_two_names = (
 	| view markup names |
 	view:: ValueView platform: p parent: nil.
@@ -243,8 +255,8 @@ test_when_getting_the_block_names_from_some_markup_that_contains_a_two_named_blo
 	names:: view blockNamesFrom: markup.
 	
 	assert: [names size = 2].
-	assert: [names at: 1 = 'test'].
-	assert: [names at: 2 = 'again' ].
+	assert: [(names at: 1) = 'test'].
+	assert: [(names at: 2) = 'again' ].
 )
 
 test_when_merging_two_sets_of_markup_and_the_child_markup_specifies_a_block_that_is_defined_in_the_parent_markup_it_should_override_the_parents_block_in_the_merged_markup = (
@@ -279,6 +291,37 @@ test_when_rendering_a_view_with_a_viewModel_and_the_model_doesnt_contain_a_key_r
 
 test_when_replacing_a_block_in_some_markup_it_should_remove_the_block_tags_and_the_inner_entirely_with_the_replacement_markup = (
 	assert: [true = false]
+)
+
+test_when_searching_for_a_block_name_in_some_text_and_the_text_is_a_malformed_block_name_it_should_cause_an_error = (
+	| view markup names |
+	view:: ValueView platform: p parent: nil.
+	markup:: 'blocktest'.
+	names:: OrderedCollection new.
+
+	should: [view lookForBlockNameIn: markup toAddTo: names.] raise: Error.
+)
+
+test_when_searching_for_a_block_name_in_some_text_and_the_text_is_a_valid_block_closer_it_should_not_add_anything_to_the_names_list = (
+	| view markup names |
+	view:: ValueView platform: p parent: nil.
+	markup:: 'endblock'.
+	names:: OrderedCollection new.
+	view lookForBlockNameIn: markup toAddTo: names.
+
+	assert: [names size = 0].
+)
+
+test_when_searching_for_a_block_name_in_some_text_and_the_text_is_a_valid_block_opening_tag_it_should_add_the_block_name_to_the_names_list = (
+	| view markup names |
+	view:: ValueView platform: p parent: nil.
+	markup:: 'block test'.
+	names:: OrderedCollection new.
+	view lookForBlockNameIn: markup toAddTo: names.
+
+	assert: [names size = 1].
+	assert: [(names at: 1) = 'test']
+	
 )
 
 test_when_searching_markup_for_a_block_of_a_given_name_and_the_markup_contains_a_block_with_the_given_name_it_should_return_the_inner_text_for_that_block_withou_the_tags = (
