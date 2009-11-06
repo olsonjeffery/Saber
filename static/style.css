@@ -1,0 +1,145 @@
+body {
+background-color:#333333;
+font-size:10pt;
+font-family:Arial;
+margin:0;
+padding:0;
+color:#FFFFFF;
+}
+
+#page {
+width:900px;
+background-image:url(/static/images/page.png);
+margin:auto;
+padding:auto;
+}
+
+#header {
+clear:both;
+width:860px;
+height:89px;
+background-image:url(/static/images/header.png);
+padding-top:30px;
+padding-left:40px;
+}
+
+#menulinks {
+clear:both;
+width:875px;
+height:39px;
+padding-left:25px;
+background-image:url(/static/images/menulinks.png);
+}
+
+* html #menulinks a { /* Filter for IE6 to prevent li stacking */
+  float: left;
+  text-decoration: none;
+  }
+
+* html #menulinks a span { /* Filter for IE6 to prevent li stacking */
+  float: left;
+  text-decoration: none;
+  }
+  
+#menulinks a {
+	padding-left:14px;
+	height:39px;
+   background-image:none;
+	display:block;
+	color:#FFFFFF;
+	text-decoration:none;
+	float:left;
+	font-size:14px;
+	font-weight:bold;
+  }
+
+#menulinks a span {
+	padding-left:8px;
+	padding-right:20px;
+	padding-top:9px;
+	height:25px;
+	display:block;
+   background-image:none;
+	text-decoration:none;
+	cursor:pointer;
+  }
+  
+  
+#menulinks a:hover, #menulinks a.active {
+	background-image:url(/static/images/menuhover.png);
+	background-position:top left;
+	text-decoration:none;
+	color:#FFFFFF;
+}
+
+#menulinks a:hover span, #menulinks a.active span {
+   background: url(/static/images/menuhoverright.png) right top no-repeat;
+	text-decoration:none;
+}
+
+#mainarea {
+width:860px;
+clear:both;
+padding-left:40px;
+}
+
+#contentarea {
+width:515px;
+padding-right:30px;
+float:left;
+line-height:14pt;
+}
+
+#contentarea_single_column {
+width:820px;
+padding-right:30px;
+float:left;
+line-height:14pt;
+}
+
+#sidebar {
+float:left;
+width:265px;
+background-image:url(/static/images/sidebartop.png);
+background-repeat:no-repeat;
+line-height:14pt;
+}
+
+#footer {
+width:900px;
+clear:both;
+height:35px;
+padding-top:30px;
+text-align:center;
+line-height:14pt;
+background-image:url(/static/images/footer.png);
+background-repeat:no-repeat;
+background-color:#000000;
+}
+
+h1 {
+font-size:25pt;
+color:#FFFFFF;
+margin:0;
+}
+
+h2 {
+font-size:15pt;
+color:#FFFFFF;
+padding-top:6px;
+}
+
+.description {
+font-size:14pt;
+color:#CCCCCC;
+margin:0;
+}
+
+a {
+color:#FFFFCC;
+text-decoration:none;
+}
+
+a:hover {
+text-decoration:underline;
+}
