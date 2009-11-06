@@ -3,7 +3,7 @@ Newsqueak2
 
 class SaberExampleSite usingPlatform: p = (
 "
-Quick start: Saber withSite: (SaberExampleApplication usingPlatform: Platform new)
+Quick start: Saber withSite: (SaberExampleSite usingPlatform: Platform new)
 
 Copyright 2009 Jeff Olson
 
@@ -65,7 +65,29 @@ class MainBase platform: p parent: theP = SaberView platform: p parent: theP (
 )
 ('as yet unclassified'
 content = (
-	^ ''
+	^ '
+<html>
+	<head>
+		<title><% block title %>SaberExampleSite<% endblock %></title>
+	</head>
+	<body>
+		<% block content %>example content<% endblock %>
+	</body>
+</html>
+	'
+)
+
+)
+
+class FooView platform: plat parent: theP = SaberView platform: platform parent: theP (
+|
+|
+)
+('as yet unclassified'
+content = (
+	^ '<% block title %>Foo, boyeee!<% endblock %>
+	<% block content %>Hello world from /foo! { thingy }<% endblock %>
+'
 )
 
 )
@@ -77,16 +99,24 @@ class SiteRootView platform: p parent: theP = SaberView platform: p parent: theP
 content = (
 	^ defineRawMarkup: [
 	'
-<html>
-	<head>
-		<title>SaberExampleSite</title>
-	</head>
-	<body>
-		{ content }
-	</body>
-</html>
+<% block title %>SiteRoot view, woot! <% endblock %>
+<% block content %> { content } <% endblock %>
 	'
 	].
+)
+
+)
+
+class NameShowView platform: plat parent: theP = SaberView platform: plat parent: theP (
+|
+|
+)
+('as yet unclassified'
+content = (
+	^ '
+<% block title %>Hello, {nameParam}<% endblock %>
+<% block content %>Hi, {nameParam}. How is {wife}?<% endblock %>
+'
 )
 
 ))
@@ -115,10 +145,18 @@ class foo = SaberHandler(
 |
 )
 ('as yet unclassified'
+getView = (
+	| parent |
+	parent:: Views new MainBase platform: platform parent: nil.
+	^ Views new FooView platform: platform parent: parent.
+)
+
 onGet: request = (
-	| fooService |
+	| fooService view |
+	view:: getView.
 	fooService:: Domain new FooService new.
-	^ HttpResponse fromString: 'GET handler for /foo. ', fooService getThing.
+	view model at: 'thingy' put: fooService getThing.
+	^ HttpResponse fromString: view render.
 )
 
 )
@@ -143,10 +181,19 @@ class show = SaberHandler(
 |
 )
 ('as yet unclassified'
+getView = (
+	| parent view |
+	parent:: Views new MainBase platform: platform parent: nil.
+	^ Views new NameShowView platform: platform parent: parent.
+)
+
 onGet: request = (
-	| wife |
+	| wife view |
 	wife:: request getFields at: 'wife' ifAbsent: [ 'your sister' ].
-	^ HttpResponse fromString: 'Hi, ', (request getFields at: 'nameParam'), '! How is ', wife, '?'
+	view:: getView.
+	view model at: 'nameParam' put: (request getFields at: 'nameParam').
+	view model at: 'wife' put: wife.
+	^ HttpResponse fromString: view render.
 )
 
 ))
@@ -175,11 +222,10 @@ getView = (
 )
 
 onGet: request = (
-	| body model view |
+	| view |
 	view:: getView.
-	view model at: 'content' put: 'hello world!!! view engine works.'.
-	body:: view render.
-	^HttpResponse fromString: body.
+	view model at: 'content' put: 'This is a handler that matches a request to the root of SaberExampleSite'.
+	^HttpResponse fromString: view render.
 )
 
 ))
