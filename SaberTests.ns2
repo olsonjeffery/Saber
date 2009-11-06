@@ -223,6 +223,30 @@ testModuleName ^ <Symbol> = (
 
 )
 
+class ChildView platform: plat parent: theP = SaberView platform: plat parent: theP (
+"Describe the class in this comment."
+|
+|
+)
+('as yet unclassified'
+content = (
+	^ '<% block overridden %>bar<% endblock %>'
+)
+
+)
+
+class ParentView platform: plat parent: theP = SaberView platform: plat parent: theP (
+"Describe the class in this comment."
+|
+|
+)
+('as yet unclassified'
+content = (
+	^ '<% block parent %>foo<% endblock %><% block overridden %>42<% endblock %>'
+)
+
+)
+
 class ValueView platform: platform parent: theP= SaberView platform: platform parent: theP (
 |
 |
@@ -275,12 +299,25 @@ test_when_getting_the_start_and_end_index_for_a_block_from_some_markup_it_should
 )
 
 test_when_merging_two_sets_of_markup_and_the_child_markup_specifies_a_block_that_is_defined_in_the_parent_markup_it_should_override_the_parents_block_in_the_merged_markup = (
-	| childMarkup parentMarkup finalMarkup |
-	assert: [true = false].
+	| view childMarkup parentMarkup finalMarkup testBlock |
+	view:: ValueView platform: p parent: nil.
+	childMarkup:: '<% block test %>foo<% endblock %>123'.
+	parentMarkup:: '<% block parent %>42<% endblock %><% block test%>bar<% endblock %>'.
+	finalMarkup:: view merge: childMarkup into: parentMarkup.
+	testBlock:: view getBlockFrom: finalMarkup named: 'test'.
+	
+	should: [testBlock = 'foo'].
 )
 
 test_when_merging_two_sets_of_markup_and_the_parent_markup_specifies_a_block_that_is_not_defined_in_the_child_markup_it_should_show_the_parents_block_in_the_merged_markup = (
-	assert: [true = false].
+	| view childMarkup parentMarkup finalMarkup testBlock |
+	view:: ValueView platform: p parent: nil.
+	childMarkup:: '<% block test %>foo<% endblock %>123'.
+	parentMarkup:: '<% block parent %>42<% endblock %><% block test%>bar<% endblock %>'.
+	finalMarkup:: view merge: childMarkup into: parentMarkup.
+	testBlock:: view getBlockFrom: finalMarkup named: 'parent'.
+	
+	should: [testBlock = '42'].
 )
 
 test_when_rendering_a_view_that_calls_for_values_from_a_model_it_should_resolve_the_values_and_interpolate_them_with_the_view = (
@@ -295,6 +332,16 @@ test_when_rendering_a_view_that_calls_for_values_from_a_model_it_should_resolve_
 	assert: [actual = expected].
 )
 
+test_when_rendering_a_view_that_inherits_from_another_view_and_it_should_replace_the_parents_blocks_with_the_childs_specified_blocks = (
+	| parent child markup |
+	parent:: ParentView platform: p parent: nil.
+	child:: ChildView platform: p parent: parent.
+	
+	markup:: child render.
+	
+	should: [markup = 'foobar'].
+)
+
 test_when_rendering_a_view_with_a_viewModel_and_the_model_doesnt_contain_a_key_referenced_in_the_view_markup_it_should_cause_an_error = (
 	| view model actual expected |
 	view:: ValueView platform: p parent: nil.
@@ -305,7 +352,15 @@ test_when_rendering_a_view_with_a_viewModel_and_the_model_doesnt_contain_a_key_r
 )
 
 test_when_replacing_a_block_in_some_markup_it_should_remove_the_block_tags_and_the_inner_entirely_with_the_replacement_markup = (
-	assert: [true = false]
+	| view childMarkup parentMarkup model result |
+	model:: Dictionary new.
+	childMarkup:: '<% block test %>foo<% endblock %>'.
+	parentMarkup:: '<% block test %>bar<% endblock %>'.
+	view:: ValueView platform: p parent: nil.
+
+	result:: view integrate: childMarkup into: parentMarkup withModel: model.
+	
+	should: [result = 'foo'].
 )
 
 test_when_searching_for_a_block_name_in_some_text_and_the_text_is_a_malformed_block_name_it_should_cause_an_error = (
@@ -340,11 +395,19 @@ test_when_searching_for_a_block_name_in_some_text_and_the_text_is_a_valid_block_
 )
 
 test_when_searching_markup_for_a_block_of_a_given_name_and_the_markup_contains_a_block_with_the_given_name_it_should_return_the_inner_text_for_that_block_withou_the_tags = (
-	assert: [true = false]
+	| view markup result |
+	view:: ValueView platform: p parent: nil.
+	markup:: 'sdfsdfdsf<% block test %>foo<% endblock %>'.
+	result:: view getBlockFrom: markup named: 'test'.
+	assert: [result = 'foo'].
 )
 
 test_when_searching_markup_for_a_block_of_a_given_name_and_the_markup_does_not_contain_a_block_with_the_given_name_it_should_return_nil = (
-	assert: [true = false]
+	| view markup result |
+	view:: ValueView platform: p parent: nil.
+	markup:: 'sdfsdfdsf<% block test %>foo<% endblock %>'.
+	result:: view getBlockFrom: markup named: 'foo'.
+	assert: [result = nil].
 )
 
 )

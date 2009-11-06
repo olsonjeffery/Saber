@@ -49,9 +49,15 @@ defineRawMarkup: block = (
 )
 
 getBlockFrom: markup named: blockName = (
-	| indices |
+	| indices result |
 	indices:: getIndicesForBlockNamed: blockName from: markup.
-	^ markup copyFrom: (indices at: 1) to: (indices at: 2).
+	( indices = { 0. 0} ) ifFalse: [
+		result:: markup copyFrom: (indices at: 1) to: (indices at: 2).
+	]
+		ifTrue: [
+		result:: nil.
+	].
+	^ result.
 )
 
 getCharactersInStream: stream upTo: char = (
@@ -71,21 +77,56 @@ getGetModelValueKeyFrom: aStream = (
 )
 
 getIndicesForBlockNamed: blockName from: markup = (
-	| start end |
+	| start end stream foundEnd |
+	foundEnd:: false.
 	start:: 0.
 	end:: 0.
+	stream:: markup readStream.
+	[stream atEnd] whileFalse: [ | currChar |
+		[ foundEnd = false ] whileTrue: [
+		currChar:: stream next.
+		( currChar = $< ) ifTrue: [
+			currChar:: stream next.
+			( currChar = $% ) ifTrue: [ | thisBlockName |
+				( start = 0) ifTrue: [ 
+					thisBlockName:: lookForBlockNameIn: (getCharactersInStream: stream upTo: $%).
+					(thisBlockName = blockName) ifTrue: [
+						currChar:: stream next.
+						currChar:: stream next.
+						start:: stream position.	
+					]
+				]
+					ifFalse: [ | endTemp |
+						endTemp:: ((stream position) - 2).
+						((textIsEndBlock: (getCharactersInStream: stream upTo: $%)) = true) ifTrue: [
+							end:: endTemp.
+							foundEnd:: true.
+					]
+				]
+			]
+		].
+		(stream atEnd) ifTrue: [ foundEnd:: true ]
+	].
+		(foundEnd) ifTrue: [ stream next. ]
+	].
 	^ { start. end. }
 )
 
-integrate: childMarkup model: aModel = (
+integrate: childMarkup into: parentMarkup withModel: aModel = (
 	| finalMarkup integratedMarkup thisMarkup |
-	thisMarkup:: resolveMarkup: content withModel: aModel.
+	thisMarkup:: parentMarkup.
 	integratedMarkup:: merge: childMarkup into: thisMarkup.
 
-	finalMarkup:: parent = nil ifTrue: [ integratedMarkup. ]
+	finalMarkup:: parent = nil ifTrue: [ stripBlockTagsFrom: integratedMarkup. ]
 		ifFalse: [ parent integrate: integratedMarkup model: aModel ].
 
 	^ finalMarkup
+)
+
+integrate: childMarkup model: aModel = (
+	| thisMarkup |
+	thisMarkup:: resolveMarkup: content withModel: aModel.
+	^ integrate: childMarkup into: thisMarkup withModel: aModel.
 )
 
 lookForBlockNameIn: text = (
@@ -144,7 +185,10 @@ renderWith: aModel = (
 )
 
 replaceBlocksNamed: blockName in: markup with: newBlock = (
-	^ ''
+	| indices integrated |
+	indices:: getIndicesForBlockNamed: blockName from: markup.
+	integrated:: markup copyReplaceFrom: (indices at: 1) to: (indices at: 2) with: newBlock.
+	^integrated
 )
 
 resolveMarkup: rawMarkup withModel: aModel = (
@@ -167,6 +211,51 @@ resolveMarkup: rawMarkup withModel: aModel = (
 						ifFalse: [result nextPut: currentChar]]].
 
 	^ result contents
+)
+
+stripBlockTagsFrom: markup = (
+	| stream finalMarkup indicesCollection newSize origSize offset |
+	indicesCollection:: OrderedCollection new.
+	finalMarkup:: markup.
+	
+	stream:: markup readStream.
+	[stream atEnd] whileFalse: [ | currChar |
+		currChar:: stream next.
+		( currChar = $< ) ifTrue: [
+			currChar:: stream next.
+			( currChar = $% ) ifTrue: [ | start end doneYet |
+				start:: ((stream position) - 1).
+				end:: 0.
+				doneYet:: (stream atEnd).
+				[ doneYet ] whileFalse: [
+					currChar:: stream next.
+					
+					(currChar = $%) ifTrue: [
+						currChar:: stream next.
+						(currChar = $>) ifTrue: [
+							end:: (stream position).
+							doneYet:: true.
+						]
+					].
+					
+					(doneYet = false) ifTrue: [ doneYet:: (stream atEnd) ]
+				].
+				(end = 0) ifTrue: [ Error new messageText: 'unclosed block when resolving view in "', (class name asString), '"' ].
+				indicesCollection add: { start. end. }
+			]
+		]
+	].
+	
+	newSize:: finalMarkup size.
+	origSize:: newSize.
+	indicesCollection do: [ :indices | 
+		offset:: (origSize - newSize).
+		finalMarkup:: finalMarkup copyReplaceFrom: ((indices at: 1) - offset) to: ((indices at: 2) - offset) with: ''.
+		newSize:: finalMarkup size.
+	].
+
+	
+	^ finalMarkup
 )
 
 textIsEndBlock: text = (
